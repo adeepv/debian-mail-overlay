@@ -3,21 +3,21 @@ FROM debian:buster-slim
 ARG DEBIAN_FRONTEND=noninteractive
 ARG BUILD_CORES
 
-ARG SKALIBS_VER=2.8.1.0
-ARG EXECLINE_VER=2.5.1.0
-ARG S6_VER=2.8.0.1
-ARG RSPAMD_VER=1.9.4
-ARG GUCCI_VER=0.1.0
+ARG SKALIBS_VER=2.9.2.1
+ARG EXECLINE_VER=2.6.0.1
+ARG S6_VER=2.9.1.0
+ARG RSPAMD_VER=2.5
+ARG GUCCI_VER=1.2.2
 
-ARG SKALIBS_SHA256_HASH="431c6507b4a0f539b6463b4381b9b9153c86ad75fa3c6bfc9dc4722f00b166ba"
-ARG EXECLINE_SHA256_HASH="b1a756842947488404db8173bbae179d6e78b6ef551ec683acca540ecaf22677"
-ARG S6_SHA256_HASH="dbe08f5b76c15fa32a090779b88fb2de9a9a107c3ac8ce488931dd39aa1c31d8"
-ARG RSPAMD_SHA256_HASH="e4720c1f45defd07dd17b9563d0ddc480c70beadbc1a833235c077960092e030"
-ARG GUCCI_SHA256_HASH="44199d8edf88442324951cafeaaea047f524deb8d887a0174cacc3aaff139740"
+ARG SKALIBS_SHA256_HASH="250b99b53dd413172db944b31c1b930aa145ac79fe6c5d7e6869ef804228c539"
+ARG EXECLINE_SHA256_HASH="e7cbb7b5942674a0b5176c42aa0a3194a848419a698e4aad9d1764d2b429ba9d"
+ARG S6_SHA256_HASH="05e259532c6db8cb23f5f79938669cee30152008ac9e792ff4acb26db9a01ff7"
+#ARG RSPAMD_SHA256_HASH="e4720c1f45defd07dd17b9563d0ddc480c70beadbc1a833235c077960092e030"
+ARG GUCCI_SHA256_HASH="133074f1aff9c31ab02cbe159553e2db27ebee6d8a0a53a3467edf84321bc2af"
 
 LABEL description="s6 + rspamd image based on Debian" \
       maintainer="Hardware <contact@meshup.net>" \
-      rspamd_version="Rspamd v$RSPAMD_VER built from source" \
+      rspamd_version="Rspamd v$RSPAMD_VER built from git source" \
       s6_version="s6 v$S6_VER built from source"
 
 ENV LC_ALL=C
@@ -26,9 +26,11 @@ RUN NB_CORES=${BUILD_CORES-$(getconf _NPROCESSORS_CONF)} \
     && BUILD_DEPS=" \
     cmake \
     gcc \
+    g++ \
     make \
     ragel \
     wget \
+    git \
     pkg-config \
     liblua5.1-0-dev \
     libluajit-5.1-dev \
@@ -36,6 +38,7 @@ RUN NB_CORES=${BUILD_CORES-$(getconf _NPROCESSORS_CONF)} \
     libevent-dev \
     libsqlite3-dev \
     libicu-dev \
+    libsodium-dev \
     libssl-dev \
     libhyperscan-dev \
     libjemalloc-dev \
@@ -83,10 +86,8 @@ RUN NB_CORES=${BUILD_CORES-$(getconf _NPROCESSORS_CONF)} \
  && make && make install \
  && cd /tmp \
  && RSPAMD_TARBALL="${RSPAMD_VER}.tar.gz" \
- && wget -q https://github.com/vstakhov/rspamd/archive/${RSPAMD_TARBALL} \
- && CHECKSUM=$(sha256sum ${RSPAMD_TARBALL} | awk '{print $1}') \
- && if [ "${CHECKSUM}" != "${RSPAMD_SHA256_HASH}" ]; then echo "${RSPAMD_TARBALL} : bad checksum" && exit 1; fi \
- && tar xzf ${RSPAMD_TARBALL} && cd rspamd-${RSPAMD_VER} \
+ && git clone --branch 2.5 https://github.com/rspamd/rspamd.git \
+ && cd rspamd \
  && cmake \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCONFDIR=/etc/rspamd \
