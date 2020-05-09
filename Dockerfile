@@ -42,7 +42,8 @@ RUN NB_CORES=${BUILD_CORES-$(getconf _NPROCESSORS_CONF)} \
     libssl-dev \
     libhyperscan-dev \
     libjemalloc-dev \
-    libmagic-dev" \
+    libmagic-dev \
+    libsodium-dev" \
  && apt-get update && apt-get install -y -q --no-install-recommends \
     ${BUILD_DEPS} \
     libevent-2.1-6 \
@@ -54,6 +55,7 @@ RUN NB_CORES=${BUILD_CORES-$(getconf _NPROCESSORS_CONF)} \
     libsqlite3-0 \
     libhyperscan5 \
     libjemalloc2 \
+    libsodium23 \
     sqlite3 \
     openssl \
     ca-certificates \
